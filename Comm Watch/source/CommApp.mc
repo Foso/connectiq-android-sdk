@@ -26,9 +26,7 @@ class CommExample extends Application.AppBase {
         phoneMethod = method(:onPhone);
         if(Communications has :registerForPhoneAppMessages) {
             Communications.registerForPhoneAppMessages(phoneMethod);
-        } else if(Communications has :setMailboxListener) {
-            Communications.setMailboxListener(mailMethod);
-        } else {
+        }  else {
             hasDirectMessagingSupport = false;
         }
     }
@@ -44,25 +42,6 @@ class CommExample extends Application.AppBase {
     // Return the initial view of your application here
     function getInitialView() {
         return [new CommView(), new CommInputDelegate()];
-    }
-
-    function onMail(mailIter) {
-        var mail;
-
-        mail = mailIter.next();
-
-        while(mail != null) {
-            var i;
-            for(i = (stringsSize - 1); i > 0; i -= 1) {
-                strings[i] = strings[i-1];
-            }
-            strings[0] = mail.toString();
-            page = 1;
-            mail = mailIter.next();
-        }
-
-        Communications.emptyMailbox();
-        WatchUi.requestUpdate();
     }
 
     function onPhone(msg) {

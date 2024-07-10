@@ -31,9 +31,11 @@ class CommInputDelegate extends WatchUi.BehaviorDelegate {
         var menu = new WatchUi.Menu();
         var delegate;
 
-        menu.addItem("Send Data", :sendData);
-        menu.addItem("Set Listener", :setListener);
-        delegate = new BaseMenuDelegate();
+        menu.addItem("Prev", :prev);
+        menu.addItem("Next", :next);
+        menu.addItem("Pause", :pause);
+        menu.addItem("Play", :play);
+        delegate = new SendMenuDelegate();
         WatchUi.pushView(menu, delegate, SLIDE_IMMEDIATE);
 
         return true;
@@ -50,34 +52,6 @@ class CommInputDelegate extends WatchUi.BehaviorDelegate {
     }
 }
 
-class BaseMenuDelegate extends WatchUi.MenuInputDelegate {
-    function initialize() {
-        WatchUi.MenuInputDelegate.initialize();
-    }
-
-    function onMenuItem(item) {
-        var menu = new WatchUi.Menu();
-        var delegate = null;
-
-        if(item == :sendData) {
-            menu.addItem("Hello World.", :hello);
-            menu.addItem("Ackbar", :trap);
-            menu.addItem("Garmin", :garmin);
-            delegate = new SendMenuDelegate();
-        } else if(item == :setListener) {
-            menu.setTitle("Listner Type");
-            menu.addItem("Mailbox", :mailbox);
-            if(Communications has :registerForPhoneAppMessages) {
-                menu.addItem("Phone Application", :phone);
-            }
-            menu.addItem("None", :none);
-            menu.addItem("Crash if 'Hi'", :phoneFail);
-            delegate = new ListnerMenuDelegate();
-        }
-
-        WatchUi.pushView(menu, delegate, SLIDE_IMMEDIATE);
-    }
-}
 
 class SendMenuDelegate extends WatchUi.MenuInputDelegate {
     function initialize() {
@@ -87,39 +61,20 @@ class SendMenuDelegate extends WatchUi.MenuInputDelegate {
     function onMenuItem(item) {
         var listener = new CommListener();
 
-        if(item == :hello) {
-            Communications.transmit("Hello World.", null, listener);
-        } else if(item == :trap) {
-            Communications.transmit("IT'S A TRAP!", null, listener);
-        } else if(item == :garmin) {
+        if(item == :next) {
+            Communications.transmit("Next", null, listener);
+        } else if(item == :prev) {
+            Communications.transmit("Prev", null, listener);
+        }else if(item == :pause) {
+            Communications.transmit("Pause", null, listener);
+        } 
+        else if(item == :play) {
+            Communications.transmit("Play", null, listener);
+        } 
+         else if(item == :garmin) {
             Communications.transmit("ConnectIQ", null, listener);
         }
 
-        WatchUi.popView(SLIDE_IMMEDIATE);
+        WatchUi.requestUpdate();
     }
 }
-
-class ListnerMenuDelegate extends WatchUi.MenuInputDelegate {
-    function initialize() {
-        WatchUi.MenuInputDelegate.initialize();
-    }
-
-    function onMenuItem(item) {
-        if(item == :mailbox) {
-            Communications.setMailboxListener(mailMethod);
-        } else if(item == :phone) {
-            if(Communications has :registerForPhoneAppMessages) {
-                Communications.registerForPhoneAppMessages(phoneMethod);
-            }
-        } else if(item == :none) {
-            Communications.registerForPhoneAppMessages(null);
-            Communications.setMailboxListener(mailMethod);
-        } else if(item == :phoneFail) {
-            crashOnMessage = true;
-            Communications.registerForPhoneAppMessages(phoneMethod);
-        }
-
-        WatchUi.popView(SLIDE_IMMEDIATE);
-    }
-}
-

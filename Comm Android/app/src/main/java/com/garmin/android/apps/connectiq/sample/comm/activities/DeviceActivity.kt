@@ -8,9 +8,12 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.media.AudioManager
 import android.os.Bundle
 import android.os.Parcelable
+import android.os.SystemClock
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
@@ -24,6 +27,7 @@ import com.garmin.android.connectiq.IQApp
 import com.garmin.android.connectiq.IQDevice
 import com.garmin.android.connectiq.exception.InvalidStateException
 import com.garmin.android.connectiq.exception.ServiceUnavailableException
+
 
 private const val TAG = "DeviceActivity"
 private const val EXTRA_IQ_DEVICE = "IQDevice"
@@ -48,6 +52,7 @@ class DeviceActivity : Activity() {
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance()
     private lateinit var device: IQDevice
     private lateinit var myApp: IQApp
+    lateinit var mAudioManager : AudioManager
 
     private var appIsOpen = false
     private val openAppListener = ConnectIQ.IQOpenApplicationListener { _, _, status ->
@@ -65,6 +70,7 @@ class DeviceActivity : Activity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device)
+        mAudioManager = this.applicationContext.getSystemService(AUDIO_SERVICE)   as AudioManager
 
         device = intent.getParcelableExtra<Parcelable>(EXTRA_IQ_DEVICE) as IQDevice
         myApp = IQApp(COMM_WATCH_ID)
@@ -94,8 +100,8 @@ class DeviceActivity : Activity() {
         // It is a good idea to unregister everything and shut things down to
         // release resources and prevent unwanted callbacks.
         try {
-            connectIQ.unregisterForDeviceEvents(device)
-            connectIQ.unregisterForApplicationEvents(device, myApp)
+            //connectIQ.unregisterForDeviceEvents(device)
+           // connectIQ.unregisterForApplicationEvents(device, myApp)
         } catch (_: InvalidStateException) {
         }
     }
@@ -143,6 +149,43 @@ class DeviceActivity : Activity() {
         }
     }
 
+    private fun playNextSong() {
+
+
+        val eventtime = SystemClock.uptimeMillis()
+
+        val upEvent =
+            KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_NEXT, 0)
+        mAudioManager.dispatchMediaKeyEvent(upEvent)
+    }
+
+    fun playPreviousSong() {
+
+
+        val eventtime = SystemClock.uptimeMillis()
+
+        val upEvent =
+            KeyEvent(eventtime, eventtime, KeyEvent.ACTION_UP, KeyEvent.KEYCODE_MEDIA_PREVIOUS, 0)
+        mAudioManager.dispatchMediaKeyEvent(upEvent)
+    }
+
+    fun pauseSong() {
+
+        val eventtime = SystemClock.uptimeMillis()
+
+        val upEvent =
+            KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PAUSE, 0)
+        mAudioManager.dispatchMediaKeyEvent(upEvent)
+    }
+
+    fun playSong() {
+
+        val eventtime = SystemClock.uptimeMillis()
+
+        val upEvent =
+            KeyEvent(eventtime, eventtime, KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_MEDIA_PLAY, 0)
+        mAudioManager.dispatchMediaKeyEvent(upEvent)
+    }
 
     // Let's register to receive messages from our application on the device.
     private fun listenByMyAppEvents() {
@@ -154,8 +197,27 @@ class DeviceActivity : Activity() {
                 val builder = StringBuilder()
                 if (message.size > 0) {
                     for (o in message) {
+                        Log.d(TAG, "Received message: $o")
                         builder.append(o.toString())
                         builder.append("\r\n")
+                        if(o.toString() == "Next")
+                        {
+                            playNextSong()
+                        }
+                        else if(o.toString() == "Prev")
+                        {
+                            playPreviousSong()
+                        }
+                        else if(o.toString() == "Play")
+                        {
+                            playSong()
+                        }
+                        else if(o.toString() == "Pause")
+                        {
+                            pauseSong()
+                        }
+                        //Send intent to play next media song
+
                     }
                 } else {
                     builder.append("Received an empty message from the application")
@@ -166,7 +228,7 @@ class DeviceActivity : Activity() {
                     .setMessage(builder.toString())
                     .setPositiveButton(android.R.string.ok, null)
                     .create()
-                    .show()
+
             }
         } catch (e: InvalidStateException) {
             Toast.makeText(this, "ConnectIQ is not in a valid state", Toast.LENGTH_SHORT).show()
