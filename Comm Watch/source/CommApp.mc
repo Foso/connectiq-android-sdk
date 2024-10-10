@@ -22,7 +22,7 @@ class CommExample extends Application.AppBase {
     function initialize() {
         Application.AppBase.initialize();
 
-        mailMethod = method(:onMail);
+    
         phoneMethod = method(:onPhone);
         if(Communications has :registerForPhoneAppMessages) {
             Communications.registerForPhoneAppMessages(phoneMethod);

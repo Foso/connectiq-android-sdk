@@ -52,7 +52,7 @@ class DeviceActivity : Activity() {
     private val connectIQ: ConnectIQ = ConnectIQ.getInstance()
     private lateinit var device: IQDevice
     private lateinit var myApp: IQApp
-    lateinit var mAudioManager : AudioManager
+    lateinit var mAudioManager: AudioManager
 
     private var appIsOpen = false
     private val openAppListener = ConnectIQ.IQOpenApplicationListener { _, _, status ->
@@ -70,7 +70,7 @@ class DeviceActivity : Activity() {
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_device)
-        mAudioManager = this.applicationContext.getSystemService(AUDIO_SERVICE)   as AudioManager
+        mAudioManager = this.applicationContext.getSystemService(AUDIO_SERVICE) as AudioManager
 
         device = intent.getParcelableExtra<Parcelable>(EXTRA_IQ_DEVICE) as IQDevice
         myApp = IQApp(COMM_WATCH_ID)
@@ -101,7 +101,7 @@ class DeviceActivity : Activity() {
         // release resources and prevent unwanted callbacks.
         try {
             //connectIQ.unregisterForDeviceEvents(device)
-           // connectIQ.unregisterForApplicationEvents(device, myApp)
+            // connectIQ.unregisterForApplicationEvents(device, myApp)
         } catch (_: InvalidStateException) {
         }
     }
@@ -200,20 +200,13 @@ class DeviceActivity : Activity() {
                         Log.d(TAG, "Received message: $o")
                         builder.append(o.toString())
                         builder.append("\r\n")
-                        if(o.toString() == "Next")
-                        {
+                        if (o.toString() == "Next") {
                             playNextSong()
-                        }
-                        else if(o.toString() == "Prev")
-                        {
+                        } else if (o.toString() == "Prev") {
                             playPreviousSong()
-                        }
-                        else if(o.toString() == "Play")
-                        {
+                        } else if (o.toString() == "Play") {
                             playSong()
-                        }
-                        else if(o.toString() == "Pause")
-                        {
+                        } else if (o.toString() == "Pause") {
                             pauseSong()
                         }
                         //Send intent to play next media song
